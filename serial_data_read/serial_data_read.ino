@@ -1,8 +1,9 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(4, 5); // RX, TX
+SoftwareSerial mySerial(D3,D8); // RX, TX
 
-void setup() {
+void setup()
+ {
   // Start serial communication
   Serial.begin(9600);
   mySerial.begin(9600);

@@ -1,7 +1,7 @@
 #include <PZEM004Tv30.h>
 #include <Wire.h>
 
-PZEM004Tv30 pzem(2, 3); // Software Serial pin 8 (RX) & 9 (TX)
+PZEM004Tv30 pzem(2,3); // Software Serial pin 8 (RX) & 9 (TX)
 
 void setup() {
   Serial.begin(9600);
@@ -64,6 +64,6 @@ void loop() {
     Serial.println("Error reading power factor");
   }
 String dataString = "V" + String(voltage, 1) + "D" + "C" + String(current, 2) + "D" + "P" + String(power, 2) + "D" + "E" + String(energy, 3) + "D" + "PF" + String(pf, 2);
-  Serial.println(dataString);
+  //Serial.println(dataString);
   delay(2000);
 }

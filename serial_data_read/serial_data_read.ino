@@ -9,7 +9,8 @@ void setup()
   mySerial.begin(9600);
 }
 
-void loop() {
+void loop() 
+{
   // Read data from the module
   if (mySerial.available() > 0) {
     String data = mySerial.readStringUntil('\n');
@@ -34,7 +35,8 @@ void loop() {
   }
 }
 
-float getValue(String data, char code) {
+float getValue(String data, char code) 
+{
   int index = data.indexOf(code) + 1; // Skip the code character
   int endIndex = data.indexOf('D', index); // Find the end delimiter
   String valueStr = data.substring(index, endIndex);

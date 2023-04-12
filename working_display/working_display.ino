@@ -15,16 +15,19 @@ SoftwareSerial mySerial(D3,D8);
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 XPT2046_Touchscreen ts(TS_CS);
 
-unsigned long previousMillis = -5000;
-const long interval = 5000; 
+unsigned long previousMillis = -5000,previous_time = 0,elapsed_time = 0,start_time,current_time;
+const long interval = 5000,intervalsec=1000; 
 unsigned long currentMillis;
 bool v2v=false;
 bool v2g=false;
 bool clear=false;
 float dcvoltage,dccurrent,dcenergy,dccharge;
+char time_string[9];
 
 
-void setup() {
+void setup() 
+{
+  start_time=millis();
   Serial.begin(9600);
   mySerial.begin(9600);
   tft.begin();
@@ -34,7 +37,6 @@ void setup() {
   tft.setTextSize(2);
   tft.setCursor(0, 0);
   tft.setTextColor(ILI9341_WHITE);
-
   drawSwitchv2v(30, 30, v2v);
   drawSwitchv2g(190, 30, v2g);
   defaulttext();
@@ -126,6 +128,7 @@ float getValue(String data, char code)
 
 void defaulttext()
 {
+  start_time=millis();
   if (currentMillis - previousMillis >= interval) 
   {
     previousMillis = currentMillis;
@@ -135,8 +138,10 @@ void defaulttext()
   tft.fillRect(240, 220, 80, 20, ILI9341_BLACK);
   tft.setCursor(220, 180);// state
   tft.fillRect(220, 180, 50, 20, ILI9341_BLACK);
+  tft.setCursor(200, 200);
+  tft.fillRect(200, 200, 130, 20, ILI9341_BLACK);
   }
-  
+
   tft.setTextSize(5);
   tft.setCursor(30, 50);
   tft.setTextColor(ILI9341_WHITE);
@@ -176,6 +181,19 @@ void defaulttext()
 
 void v2vtext()
 {
+  current_time = millis();
+  if (current_time - previous_time >= 1000)
+  {
+     previous_time = current_time;
+    elapsed_time = current_time - start_time;
+    int hours = elapsed_time / 3600000;
+    int minutes = (elapsed_time / 60000) % 60;
+    int seconds = (elapsed_time / 1000) % 60;
+    snprintf(time_string, sizeof(time_string), "%02d:%02d:%02d", hours, minutes, seconds);
+    tft.setCursor(200, 200);
+    tft.fillRect(200, 200, 130, 20, ILI9341_BLACK);
+    tft.println(time_string);
+  }
   
   if (currentMillis - previousMillis >= interval) 
   {
@@ -213,7 +231,7 @@ void v2vtext()
   tft.setTextSize(2);
   tft.setCursor(30, 200);
   tft.setTextColor(ILI9341_WHITE);
-  tft.println("TIME ELAPSED : 00:00:00");
+  tft.println("TIME ELAPSED :");
   tft.setTextSize(2);
   tft.setCursor(30, 220);
   tft.setTextColor(ILI9341_WHITE);

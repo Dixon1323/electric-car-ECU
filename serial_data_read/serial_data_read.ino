@@ -1,10 +1,11 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(D3,D8); // RX, TX
+SoftwareSerial mySerial(11,10); // RX, TX
 
 void setup()
  {
   // Start serial communication
+  pinMode(3,INPUT);
   Serial.begin(9600);
   mySerial.begin(9600);
 }
@@ -12,7 +13,8 @@ void setup()
 void loop() 
 {
   // Read data from the module
-  if (mySerial.available() > 0) {
+  if (mySerial.available() > 0) 
+  {
     String data = mySerial.readStringUntil('\n');
     Serial.println(data);
     

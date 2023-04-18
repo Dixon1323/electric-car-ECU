@@ -25,7 +25,7 @@ void loop()
     float charge = getValue(data, 'A');
     
     // Print values to serial monitor
-    Serial.print("Current:");
+    /*Serial.print("Current:");
     Serial.print(current);
     Serial.print("Voltage: ");
     Serial.print(voltage);
@@ -33,7 +33,7 @@ void loop()
     Serial.print(energy);
     Serial.print(" Wh, Charge: ");
     Serial.print(charge);
-    Serial.println(" Ah");
+    Serial.println(" Ah");*/
   }
 }
 

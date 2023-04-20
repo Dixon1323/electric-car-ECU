@@ -5,8 +5,7 @@
 #include <XPT2046_Touchscreen.h>
 #include <DHT.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <WiFiClient.h>
+#include<AdafruitIO_WiFi.h>
 
 #define TFT_CS D2
 #define TFT_DC D4
@@ -15,28 +14,35 @@
 #define LED_PIN D0
 #define DHTPIN D8  
 #define DHTTYPE DHT22 
+#define IO_USERNAME "dixon1323"
+#define IO_KEY "aio_PmqO00ZWhC8QrU9augqRcJ0yXaUL"
+#define WLAN_SSID "Chathamkottu"
+#define WLAN_PASS "12345678"
 
 DHT dht(DHTPIN, DHTTYPE);
 SPISettings settings(16000000, MSBFIRST, SPI_MODE0);
 SoftwareSerial mySerial(D3,D0);
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 XPT2046_Touchscreen ts(TS_CS);
-WiFiClient client;
+AdafruitIO_WiFi io(IO_USERNAME,IO_KEY,WLAN_SSID,WLAN_PASS);
+AdafruitIO_Feed *voltage =io.feed("Ac voltage");
+AdafruitIO_Feed *battery =io.feed("battery");
+AdafruitIO_Feed *status =io.feed("status");
+AdafruitIO_Feed *temperature =io.feed("temperature");
+AdafruitIO_Feed *Energy =io.feed("Energy Transferred");
 
-const char* ssid     = "Chathamkottu";
-const char* password = "12345678";
-const char* serverName = "http://192.168.1.10/ecu/post-esp-data.php";
-String apiKeyValue = "tPmAT5Ab3j7F9";
-unsigned long previousMillis = -5000,previous_time = 0,elapsed_time = 0,start_time,current_time;
-const long interval = 4000,intervalsec=1000; 
-unsigned long currentMillis;
+
+unsigned long previousMillis = -5000,previousMillis1 = -5000,previous_time = 0,elapsed_time = 0,start_time,current_time;
+const long interval = 4000,intervalsec=1000,intervalupdate=8000; 
+unsigned long currentMillis,currentMillis1;
 bool v2v=false;
 bool v2g=false;
 bool clear=false;
-float dcvoltage,dccurrent,dcenergy,dccharge,accurrent,acenergy,acpower,pf,temp,hum,templimit,batlimit,lat,lon,totpower;
-int acvoltage,mode=0;
+float dcvoltage,dccurrent,dcenergy,dccharge,accurrent,acenergy,acpower,pf,temp,hum,templimit,batlimit,lat,lon;
+int acvoltage,mode=0,energy;
 char time_string[9];
 String data,stats;
+
 
 void setup() 
 {
@@ -45,6 +51,11 @@ void setup()
   digitalWrite(LED_PIN,HIGH);
   Serial.begin(9600);
   mySerial.begin(9600);
+  io.connect();
+  while(io.status()<AIO_CONNECTED){
+    Serial.print(".");
+    delay(500);    
+  }
   dht.begin();
   tft.begin();
   ts.begin();
@@ -56,20 +67,13 @@ void setup()
   drawSwitchv2v(30, 30, v2v);
   drawSwitchv2g(190, 30, v2g);
   defaulttext();
-  WiFi.begin(ssid, password);
-  Serial.println("Connecting");
-  while(WiFi.status() != WL_CONNECTED) { 
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.print("Connected to WiFi network with IP Address: ");
-  Serial.println(WiFi.localIP());
 }
 
 void loop()
  {
+   io.run();
    currentMillis = millis();
+   currentMillis1 = millis();
    digitalWrite(LED_PIN,HIGH);
    getdcdata();
    getacdata();
@@ -208,10 +212,10 @@ void temper()
 
 void defaulttext()
 {
+  
   stats="off";
   start_time=millis();
   mode=5;
-  totpower=0;
   if (currentMillis - previousMillis >= interval) 
   {
     previousMillis = currentMillis;
@@ -272,9 +276,9 @@ void defaulttext()
   tft.setTextColor(ILI9341_WHITE);
   tft.println("ENERGY TRANSFERRED : 0W");
   clear=false;
+  defaultupdate();
   digitalWrite(LED_PIN,LOW);
   delay(50);
-  defaultupload();
 }
 }
 
@@ -351,8 +355,17 @@ void v2vtext()
   tft.setCursor(300, 220);
   tft.println("W");
   clear=true;
-  dcupload();
+  v2vupdate();
+  if(currentMillis1-previousMillis1 >= intervalupdate)
+  {
+  previousMillis1 = currentMillis1;
+  voltage->save(acvoltage);
+  battery->save(dcvoltage);
+  status->save(stats);
+  temperature->save(temp);
+  Energy->save(dcenergy);
   //delay(5000);
+  }
 }
 }
 void v2gtext()
@@ -425,136 +438,49 @@ void v2gtext()
   tft.setCursor(300, 220);
   tft.println("W");
   clear=true;
+  v2gupdate();
   //delay(5000);
-  acupload();
 }
 }
 
-
-void defaultupload() {
-  
-  //Check WiFi connection status
-  if(WiFi.status()== WL_CONNECTED){
-    HTTPClient http;
-    
-    // Your Domain name with URL path or IP address with path
-    //http.begin(serverName);
-    http.begin(client, serverName);
-    // Specify content-type header
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    
-    // Prepare your HTTP POST request data
-    String httpRequestData = "api_key=" + apiKeyValue + "&battery=" + dcvoltage+ "&temp=" + temp + "&status=" + stats+ "&power=" + totpower + "&lat=" + lat+ "&lon=" + lon + "";
-    Serial.print("httpRequestData: ");
-    Serial.println(httpRequestData);
-    int httpResponseCode = http.POST(httpRequestData);
-     
-    // If you need an HTTP request with a content type: text/plain
-    //http.addHeader("Content-Type", "text/plain");
-    //int httpResponseCode = http.POST("Hello, World!");
-    
-    // If you need an HTTP request with a content type: application/json, use the following:
-    //http.addHeader("Content-Type", "application/json");
-    //int httpResponseCode = http.POST("{\"value1\":\"19\",\"value2\":\"67\",\"value3\":\"78\"}");
-  if (httpResponseCode>0) {
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
-    }
-    else {
-      Serial.print("Error code: ");
-      Serial.println(httpResponseCode);
-    }
-    // Free resources
-    http.end();
-  }
-  else {
-    Serial.println("WiFi Disconnected");
-  }
-  //Send an HTTP POST request every 15 seconds
-  
+void defaultupdate()
+{ 
+  if(currentMillis1-previousMillis1 >= intervalupdate)
+  {
+  previousMillis1 = currentMillis1;
+  voltage->save(acvoltage);
+  battery->save(dcvoltage);
+  status->save(stats);
+  temperature->save(temp);
+  Energy->save(energy);
+  Serial.println("offffff");
+}
 }
 
-void acupload() {
-  
- //Check WiFi connection status
-  if(WiFi.status()== WL_CONNECTED){
-    HTTPClient http;
-    
-    // Your Domain name with URL path or IP address with path
-    //http.begin(serverName);
-    http.begin(client, serverName);
-    
-    // Specify content-type header
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    
-    // Prepare your HTTP POST request data
-    String httpRequestData = "api_key=" + apiKeyValue + "&battery=" + dcvoltage+ "&temp=" + temp + "&status=" + stats+ "&power=" + acenergy + "&lat=" + lat+ "&lon=" + lon + "";
-    Serial.print("httpRequestData: ");
-    Serial.println(httpRequestData);
-    int httpResponseCode = http.POST(httpRequestData);
-     
-    // If you need an HTTP request with a content type: text/plain
-    //http.addHeader("Content-Type", "text/plain");
-    //int httpResponseCode = http.POST("Hello, World!");
-    
-    // If you need an HTTP request with a content type: application/json, use the following:
-    //http.addHeader("Content-Type", "application/json");
-    //int httpResponseCode = http.POST("{\"value1\":\"19\",\"value2\":\"67\",\"value3\":\"78\"}");
-  if (httpResponseCode>0) {
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
-    }
-    else {
-      Serial.print("Error code: ");
-      Serial.println(httpResponseCode);
-    }
-    // Free resources
-    http.end();
-  }
-  else {
-    Serial.println("WiFi Disconnected");
-  }
-  //Send an HTTP POST request every 15 seconds
+void v2vupdate()
+{
+  if(currentMillis1-previousMillis1 >= intervalupdate)
+  {
+  previousMillis1 = currentMillis1;
+  voltage->save(acvoltage);
+  battery->save(dcvoltage);
+  status->save(stats);
+  temperature->save(temp);
+  Energy->save(dcenergy);
+  Serial.println("v2222vvvv");
 }
-void dcupload() {
-  
-  //Check WiFi connection status
-  if(WiFi.status()== WL_CONNECTED){
-    HTTPClient http;
-    
-    // Your Domain name with URL path or IP address with path
-    //http.begin(serverName);
-    http.begin(client, serverName);
-    // Specify content-type header
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    
-    // Prepare your HTTP POST request data
-    String httpRequestData = "api_key=" + apiKeyValue + "&battery=" + acvoltage+ "&temp=" + temp + "&status=" + stats+ "&power=" + dcenergy + "&lat=" + lat+ "&lon=" + lon + "";
-    Serial.print("httpRequestData: ");
-    Serial.println(httpRequestData);
-    int httpResponseCode = http.POST(httpRequestData);
-     
-    // If you need an HTTP request with a content type: text/plain
-    //http.addHeader("Content-Type", "text/plain");
-    //int httpResponseCode = http.POST("Hello, World!");
-    
-    // If you need an HTTP request with a content type: application/json, use the following:
-    //http.addHeader("Content-Type", "application/json");
-    //int httpResponseCode = http.POST("{\"value1\":\"19\",\"value2\":\"67\",\"value3\":\"78\"}");
-  if (httpResponseCode>0) {
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
-    }
-    else {
-      Serial.print("Error code: ");
-      Serial.println(httpResponseCode);
-    }
-    // Free resources
-    http.end();
-  }
-  else {
-    Serial.println("WiFi Disconnected");
-  }
-  //Send an HTTP POST request every 15 seconds
-  
+}
+
+void v2gupdate()
+{
+  if(currentMillis1-previousMillis1 >= intervalupdate)
+  {
+  previousMillis1 = currentMillis1;
+  voltage->save(acvoltage);
+  battery->save(dcvoltage);
+  status->save(stats);
+  temperature->save(temp);
+  Energy->save(acenergy);
+  Serial.println("v22222222gggggg");
+}
 }

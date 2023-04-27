@@ -15,8 +15,8 @@
 #define DHTPIN D8  
 #define DHTTYPE DHT22 
 #define IO_USERNAME "dixon1323"
-#define IO_KEY "aio_PmqO00ZWhC8QrU9augqRcJ0yXaUL"
-#define WLAN_SSID "Chathamkottu"
+#define IO_KEY "aio_cYTr00YJ34sm7kE0LsRL2wpluXMi"
+#define WLAN_SSID "bluetooth"
 #define WLAN_PASS "12345678"
 
 DHT dht(DHTPIN, DHTTYPE);

@@ -26,7 +26,7 @@ void loop()
  unsigned long currentMillis = millis();
  if (currentMillis - previousMillis >= interval) 
  {
-   Serial.println("asdfgghjklpoiuytrew");
+   //Serial.println("asdfgghjklpoiuytrew");
    digitalWrite(12,LOW);
    delay(500);
  }
@@ -117,7 +117,7 @@ void data_sent()
     Serial.println("Error reading power factor");
   }
 String dataString = "V" + String(voltage, 1) + "D" + "C" + String(current, 2) + "D" + "P" + String(power, 2) + "D" + "E" + String(energy, 3) + "D" + "F" + String(pf, 2)+ "D" + "L" + String(lat, 7)+ "D" + "l" + String(lon, 7);
-  Serial.println(dataString);
+  //Serial.println(dataString);
   mySerial.println(dataString);
   delay(2000);
 }

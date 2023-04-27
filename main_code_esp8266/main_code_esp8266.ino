@@ -15,9 +15,9 @@
 #define DHTPIN D8  
 #define DHTTYPE DHT22 
 #define IO_USERNAME "dixon1323"
-#define IO_KEY "aio_cYTr00YJ34sm7kE0LsRL2wpluXMi"
-#define WLAN_SSID "bluetooth"
-#define WLAN_PASS "12345678"
+#define IO_KEY "aio_FYHg27v3sa9zBEYC3aaMQ92BbeYx"
+#define WLAN_SSID "Iphone 12"
+#define WLAN_PASS "tubelight"
 
 DHT dht(DHTPIN, DHTTYPE);
 SPISettings settings(16000000, MSBFIRST, SPI_MODE0);
@@ -30,10 +30,12 @@ AdafruitIO_Feed *battery =io.feed("battery");
 AdafruitIO_Feed *status =io.feed("status");
 AdafruitIO_Feed *temperature =io.feed("temperature");
 AdafruitIO_Feed *Energy =io.feed("Energy Transferred");
+AdafruitIO_Feed *digital = io.feed("v2v");
+AdafruitIO_Feed *digital2 = io.feed("v2g");
 
 
 unsigned long previousMillis = -5000,previousMillis1 = -5000,previous_time = 0,elapsed_time = 0,start_time,current_time;
-const long interval = 4000,intervalsec=1000,intervalupdate=8000; 
+const long interval = 4000,intervalsec=1000,intervalupdate=30000; 
 unsigned long currentMillis,currentMillis1;
 bool v2v=false;
 bool v2g=false;
@@ -47,19 +49,28 @@ String data,stats;
 void setup() 
 {
   start_time=millis();
-  pinMode(LED_PIN,OUTPUT);
-  digitalWrite(LED_PIN,HIGH);
+  pinMode(A0,OUTPUT);
+  analogWrite(A0,LOW);
   Serial.begin(9600);
   mySerial.begin(9600);
+  tft.begin();
+  ts.begin();
+  tft.setRotation(1);
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setTextSize(2);
+  tft.setCursor(60, 140);
+  tft.setTextColor(ILI9341_WHITE);
+  tft.println("Waiting to Connect");
   io.connect();
+  digital->onMessage(handleMessage);
+  digital2->onMessage(handleMessage2);
   while(io.status()<AIO_CONNECTED){
     Serial.print(".");
     delay(500);    
   }
   dht.begin();
-  tft.begin();
-  ts.begin();
-  tft.setRotation(1);
+  digital->get();
+  digital2->get();
   tft.fillScreen(ILI9341_BLACK);
   tft.setTextSize(2);
   tft.setCursor(0, 0);
@@ -74,7 +85,6 @@ void loop()
    io.run();
    currentMillis = millis();
    currentMillis1 = millis();
-   digitalWrite(LED_PIN,HIGH);
    getdcdata();
    getacdata();
    temper();
@@ -277,7 +287,7 @@ void defaulttext()
   tft.println("ENERGY TRANSFERRED : 0W");
   clear=false;
   defaultupdate();
-  digitalWrite(LED_PIN,LOW);
+  analogWrite(A0,HIGH);
   delay(50);
 }
 }
@@ -354,6 +364,7 @@ void v2vtext()
   tft.println(dcenergy);
   tft.setCursor(300, 220);
   tft.println("W");
+  analogWrite(A0,LOW);
   clear=true;
   v2vupdate();
   if(currentMillis1-previousMillis1 >= intervalupdate)
@@ -437,6 +448,7 @@ void v2gtext()
   tft.println(acenergy);
   tft.setCursor(300, 220);
   tft.println("W");
+  analogWrite(A0,LOW);
   clear=true;
   v2gupdate();
   //delay(5000);
@@ -483,4 +495,52 @@ void v2gupdate()
   Energy->save(acenergy);
   Serial.println("v22222222gggggg");
 }
+}
+
+void handleMessage(AdafruitIO_Data *data) {
+
+  //Serial.print("received <- ");
+
+  if(data->toPinLevel() == 1&&v2g==false)
+  {
+    //Serial.println("HIGH");
+      v2v=true;
+      drawSwitchv2v(30, 30, v2v);
+      delay(50); // debounce delay
+      v2vtext();
+  }
+  if(data->toPinLevel() == 0)
+  {
+   // Serial.println("LOW");
+      v2v=false;
+      delay(50); // debounce delay
+      drawSwitchv2v(30, 30, false);
+      drawSwitchv2g(190, 30, false);
+      defaulttext();
+  }
+
+}
+
+void handleMessage2(AdafruitIO_Data *data) {
+
+  //Serial.print("received 2 <- ");
+
+  if(data->toPinLevel() == 1 &&v2v==false)
+  {
+    //Serial.println("HIGH");
+    v2g=true;
+      drawSwitchv2g(190, 30, v2g);
+      delay(50); // debounce delay
+     v2gtext();
+  }
+  if(data->toPinLevel() == 0)
+  {
+    //Serial.println("LOW");
+      v2v=false;
+      drawSwitchv2v(30, 30, false);
+      drawSwitchv2g(190, 30, false);
+      delay(50); // debounce delay
+      defaulttext();
+  }
+
 }

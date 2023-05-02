@@ -55,7 +55,7 @@ void loop()
     else
     if(data==5)
     {
-    Serial.println("off");
+      Serial.println("off");
       digitalWrite(6,LOW);
       digitalWrite(7,LOW);
   }

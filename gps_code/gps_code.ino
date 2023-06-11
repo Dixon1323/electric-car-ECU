@@ -18,7 +18,7 @@ const char* Host = "www.googleapis.com";
 
 String thisPage = "/geolocation/v1/geolocate?key=";
 
-String key = "AIzaSyDYdTBac2rRJBem9ntcha-RKROmIlj8nVQ";
+String key = "";
 
 
 int status = WL_IDLE_STATUS;

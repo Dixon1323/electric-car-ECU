@@ -14,7 +14,7 @@ XPT2046_Touchscreen ts(TS_CS);
 void setup() {
   tft.begin();
   ts.begin();
-  tft.setRotation(1); // adjust rotation as necessary
+  tft.setRotation(3); // adjust rotation as necessary
   tft.fillScreen(ILI9341_BLACK);
   tft.setTextSize(2);
   tft.setCursor(0, 0);

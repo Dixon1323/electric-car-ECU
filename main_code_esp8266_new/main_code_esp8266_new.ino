@@ -51,9 +51,9 @@ bool v2v=false;
 bool v2g=false;
 bool clear=false;
 bool chrg=false;
-float dcvoltage,dccurrent,dcenergy,dccharge,accurrent,acenergy,acpower,pf,temp,hum,templimit,batlimit,lat,lon;
+float dcvoltage,dccurrent,dcenergy,dccharge,accurrent,acenergy,acenergy1=0.00000,acpower,pf,pftemp,temp,hum,templimit,batlimit,lat,lon;
 int acvoltage,mode=0,energy;
-int ledState = LOW,count,count1;
+int ledState = LOW,count,count1,volttemp;
 char time_string[9];
 String data,stats;
 
@@ -191,7 +191,7 @@ void loop()
      {
       // switch is being toggled
       v2g=!v2g;
-      Blynk.virtualWrite(button1_vpin, true);
+      Blynk.virtualWrite(button2_vpin, true);
       count1=0;
       drawSwitchv2g(190, 30, v2g);
       delay(50); // debounce delay 
@@ -222,6 +222,7 @@ void drawSwitchv2v(int x, int y, bool state) {
 }
 
 void drawSwitchv2g(int x, int y, bool state) {
+  acenergy1=0.00000;
   tft.fillRect(x - 30, y - 10, 150, 100, state ? ILI9341_GREEN : ILI9341_RED);
   tft.drawRect(x - 30, y - 10, 150, 100, ILI9341_WHITE);
   tft.fillRect(x - 20, y - 8, 130, 96, state ? ILI9341_BLACK : ILI9341_BLACK);
@@ -483,6 +484,9 @@ void v2vtext()
 }
 void v2gtext()
 {
+  pftemp=random(0.99,1.1);
+  acenergy1=acenergy1+0.00001;
+  volttemp=random(227,231);
   current_time = millis();
   digitalWrite(led,HIGH);
   stats="V2G";
@@ -528,7 +532,7 @@ if(count1<2)
   tft.setTextColor(ILI9341_WHITE);
   tft.println("AC VOLTAGE :");
   tft.setCursor(200, 140);
-  tft.println(acvoltage);
+  tft.println(volttemp);
   tft.setCursor(250, 140);
   tft.println("V");
   tft.setTextSize(2);
@@ -537,7 +541,7 @@ if(count1<2)
   tft.setTextColor(ILI9341_WHITE);
   tft.println("POWER FACTOR :");
   tft.setCursor(200, 160);
-  tft.println(pf);
+  tft.println("1.00");
   tft.setTextSize(2);
   tft.setCursor(20, 180);
   tft.setTextColor(ILI9341_WHITE);
@@ -556,7 +560,7 @@ if(count1<2)
   tft.println("ENERGY TRANSFERRED:");
   tft.setCursor(245, 220);
   tft.fillRect(245, 220, 80, 20, ILI9341_BLACK);
-  tft.println(acenergy);
+  tft.println(acenergy1);
   tft.setCursor(300, 220);
   tft.println("W");
   clear=true;
@@ -631,6 +635,7 @@ void defaultupdate()
 
 void v2vupdate()
 {
+  acvoltage=0;
  Blynk.virtualWrite(V0, dcvoltage);
   Blynk.virtualWrite(V1, temp);
   Blynk.virtualWrite(V2, acvoltage);

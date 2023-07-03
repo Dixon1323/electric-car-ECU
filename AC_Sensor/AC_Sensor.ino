@@ -2,7 +2,7 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 
-PZEM004Tv30 pzem(4,5); // Software Serial pin 8 (RX) & 9 (TX)
+PZEM004Tv30 pzem(5,4); // Software Serial pin 8 (RX) & 9 (TX)
 SoftwareSerial mySerial(11, 10); // RX, TX
 
 void setup() {

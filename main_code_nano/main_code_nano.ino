@@ -5,7 +5,7 @@
 PZEM004Tv30 pzem(4,5); // Software Serial pin 8 (RX) & 9 (TX)
 SoftwareSerial mySerial(11, 10); // RX, TX
 int data;
-const float lat=00.000000,lon=76.6690069;
+ float lat=00.000000,lon=76.6690069;
 unsigned long previousMillis = 0;
 const long interval = 10000;
 
@@ -34,11 +34,11 @@ void loop()
  digitalWrite(12,HIGH);
  if(digitalRead(8)==1)
  {
-   lat=11.000000
+   lat=11.000000;
  }
  else
  {
-   lat=00.000000
+   lat=00.000000;
  }
  data_get();
  data_sent();

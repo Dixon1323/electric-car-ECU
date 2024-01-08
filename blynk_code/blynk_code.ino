@@ -74,6 +74,5 @@ void loop()
  // Blynk.virtualWrite(button1_vpin, false);
   //Blynk.virtualWrite(button2_vpin, false);
   Blynk.run();
-}
 
-
+  

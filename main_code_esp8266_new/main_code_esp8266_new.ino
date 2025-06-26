@@ -19,8 +19,8 @@
 #define LED_PIN D0
 #define DHTPIN D8  
 #define DHTTYPE DHT22 
-//#define IO_USERNAME "dixon1323"
-//#define IO_KEY "aio_sufN62UftcyAqMxmT4tKppWVnNVi"
+//#define IO_USERNAME " "
+//#define IO_KEY " "
 //#define WLAN_SSID "realme"
 //#define WLAN_PASS "12345678"
 #define led D0

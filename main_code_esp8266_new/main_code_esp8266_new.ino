@@ -8,9 +8,9 @@
 //#include <AdafruitIO_WiFi.h>
 #include <BlynkSimpleEsp8266.h>
 
-#define BLYNK_TEMPLATE_ID "TMPL3N53WIbrU"
-#define BLYNK_TEMPLATE_NAME "Car ECU"
-#define BLYNK_AUTH_TOKEN "-vO6d-vthcYolHQs2kymhWETzBZgFE_p"
+#define BLYNK_TEMPLATE_ID "YOUR_TEMPLATE_ID"
+#define BLYNK_TEMPLATE_NAME "YOUR_TEMPLATE_NAME"
+#define BLYNK_AUTH_TOKEN "YOUR_AUTH_KEY"
 #define BLYNK_PRINT Serial
 #define TFT_CS D2
 #define TFT_DC D4

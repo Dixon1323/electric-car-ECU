@@ -16,7 +16,7 @@
 #define DHTPIN D8  
 #define DHTTYPE DHT22 
 #define IO_USERNAME "dixon1323"
-#define IO_KEY "aio_sufN62UftcyAqMxmT4tKppWVnNVi"
+#define IO_KEY "YOUR_AUTH_KEY"
 #define WLAN_SSID "Iphone 12"
 #define WLAN_PASS "tubelight"
 #define led D0
